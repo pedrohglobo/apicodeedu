@@ -6,18 +6,18 @@
  * and open the template in the editor.
  */
 
-namespace CodeOrders\V1\Rest\Users;
+namespace CodeOrders\V1\Rest\Products;
 
 use \Zend\Db\TableGateway\TableGatewayInterface;
 use \Zend\Paginator\Adapter\DbTableGateway;
 use \Zend\Stdlib\Hydrator\ObjectProperty;
 use ZF\ApiProblem\ApiProblem;
 /**
- * Description of UsersRepository
+ * Description of ProductsRepository
  *
  * @author PedroHenrique
  */
-class UsersRepository {
+class ProductsRepository {
 
     /**
      * @var TableGatewayInterface
@@ -35,7 +35,7 @@ class UsersRepository {
         $paginatorAdapter = new DbTableGateway($tableGateway);
         
         
-        return new UsersCollection($paginatorAdapter);
+        return new ProductsCollection($paginatorAdapter);
 //        return $this->tableGateway->select();
     }
     
