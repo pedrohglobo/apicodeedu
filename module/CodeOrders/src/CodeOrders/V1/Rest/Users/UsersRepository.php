@@ -47,6 +47,14 @@ class UsersRepository {
         
     }
     
+    public function findByUsername($username) {
+        
+        $resultSet = $this->tableGateway->select(['username' => (int)$username]);
+        
+        return $resultSet->current();
+        
+    }
+    
     public function insert($data) {
         
         $hydrator = new ObjectProperty();
