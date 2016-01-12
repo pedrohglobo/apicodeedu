@@ -1,18 +1,18 @@
 <?php
-namespace CodeOrders\V1\Rest\Products;
+namespace CodeOrders\V1\Rest\Clients;
 
 use ZF\ApiProblem\ApiProblem;
 use CodeOrders\V1\Abstracts\ResourceAbstract;
 
-class ProductsResource extends ResourceAbstract
+class ClientsResource extends ResourceAbstract
 {
 
     /**
-     * @var ProductsRepository
+     * @var ClientsRepository
      */
     private $repository;
 
-    public function __construct(ProductsRepository $repository) {
+    public function __construct(ClientsRepository $repository) {
         
         $this->repository = $repository;
     }

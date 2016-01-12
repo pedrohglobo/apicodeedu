@@ -36,10 +36,10 @@ class OrdersRepository {
         $this->orderItemTableGateway = $orderItemTableGateway;
     }
 
-    public function findAll() {
+    public function findAll($params = array()) {
         $hydrator = new ClassMethods();
         $hydrator->addStrategy('items', new OrderItemHydratorStrategy(new ClassMethods()));
-        $orders = $this->tableGateway->select();
+        $orders = $this->tableGateway->select($params);
         
         $res = [];
         foreach ($orders as $order) {
@@ -62,6 +62,28 @@ class OrdersRepository {
         
     }
     
+
+    public function find($id) {
+        
+        
+        $hydrator = new ClassMethods();
+        $hydrator->addStrategy('items', new OrderItemHydratorStrategy(new ClassMethods()));
+        
+        $orderBusca = $this->tableGateway->select(['id' => $id]);
+        $order = $orderBusca->current();
+        
+        $items = $this->orderItemTableGateway->select(['order_id' => $order->getId()]);
+
+        foreach ($items as $item) {
+            $order->addItems($item);
+        }
+
+        $res = $hydrator->extract($order);
+        
+        return $res;
+        
+    }
+    
     public function insert(array $data) {
         
         $this->tableGateway->insert($data);
@@ -76,8 +98,29 @@ class OrdersRepository {
         return $id;
     }
     
+    public function updateItem(array $data) {
+        
+        $this->orderItemTableGateway->insert($data);
+        $id = $this->orderItemTableGateway->getLastInsertValue();
+        return $id;
+    }
+    
     public function getTablegateway() {
         return $this->tableGateway;
+    }
+    
+    
+    public function getOrderItemTablegateway() {
+        return $this->orderItemTableGateway;
+    }
+    
+    public function getOrderItems($orderId) {
+        $itens = $this->orderItemTableGateway->select(['order_id' => $orderId]);
+        $retorno = [];
+        foreach ($itens as $item) {
+            $retorno[$item->getId()] = $item;
+        }
+        return $retorno;
     }
     
 }

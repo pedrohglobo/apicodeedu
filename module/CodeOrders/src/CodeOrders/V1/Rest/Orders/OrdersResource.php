@@ -2,11 +2,11 @@
 namespace CodeOrders\V1\Rest\Orders;
 
 use ZF\ApiProblem\ApiProblem;
-use ZF\Rest\AbstractResourceListener;
+use CodeOrders\V1\Abstracts\ResourceAbstract;
 
-class OrdersResource extends AbstractResourceListener
+class OrdersResource extends ResourceAbstract 
 {
-
+    
     /**
      * @var OrdersService
      */
@@ -18,7 +18,7 @@ class OrdersResource extends AbstractResourceListener
     private $repository;
 
     public function __construct(OrdersRepository $repository, OrdersService $service) {
-        
+
         $this->repository = $repository;
         
         $this->service = $service;
@@ -32,11 +32,17 @@ class OrdersResource extends AbstractResourceListener
      */
     public function create($data)
     {
-        $result = $this->service->insert($data);
-        if($result === 'error'){
-            return new ApiProblem(400, 'Erro ao inserir pedido');
+        $usuarioLogado = $this->getUsuarioLogado();
+        if ($usuarioLogado->getRole() === 'salesman') {
+            $result = $this->service->insert($data);
+            if($result === 'error'){
+                return new ApiProblem(400, 'Erro ao inserir pedido');
+            }
+            return $result;
+        }else{
+            return new ApiProblem(403, "Apenas usuários 'salesman' podem adicionar pedidos");
         }
-        return $result;
+        
     }
 
     /**
@@ -47,7 +53,11 @@ class OrdersResource extends AbstractResourceListener
      */
     public function delete($id)
     {
-        return new ApiProblem(405, 'The DELETE method has not been defined for individual resources');
+        $entity = $this->repository->find($id);
+        $usuarioLogado = $this->getUsuarioLogado();
+        if ($usuarioLogado->getRole() === 'admin' || $usuarioLogado->getId() === $entity['user_id']) {
+            return $this->service->delete($id);
+        }
     }
 
     /**
@@ -69,7 +79,12 @@ class OrdersResource extends AbstractResourceListener
      */
     public function fetch($id)
     {
-        return new ApiProblem(405, 'The GET method has not been defined for individual resources');
+        $entity = $this->repository->find($id);
+        $usuarioLogado = $this->getUsuarioLogado();
+        if ($usuarioLogado->getRole() === 'admin' || $usuarioLogado->getId() === $entity['user_id']) {
+            return $entity;
+        }
+        return new ApiProblem(403, "O usuário não pode acessar essa ordem");
     }
 
     /**
@@ -80,7 +95,11 @@ class OrdersResource extends AbstractResourceListener
      */
     public function fetchAll($params = array())
     {
-        return $this->repository->findAll();
+        $usuarioLogado = $this->getUsuarioLogado();
+        if ($usuarioLogado->getRole() === 'salesman' ) {
+            $params['user_id'] = $usuarioLogado->getId();
+        }
+        return $this->repository->findAll($params);
     }
 
     /**
@@ -92,7 +111,7 @@ class OrdersResource extends AbstractResourceListener
      */
     public function patch($id, $data)
     {
-        return new ApiProblem(405, 'The PATCH method has not been defined for individual resources');
+        return $this->service->update($id, $data);
     }
 
     /**
@@ -115,6 +134,6 @@ class OrdersResource extends AbstractResourceListener
      */
     public function update($id, $data)
     {
-        return new ApiProblem(405, 'The PUT method has not been defined for individual resources');
+        return $this->service->update($id, $data);
     }
 }
