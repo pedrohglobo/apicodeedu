@@ -3,7 +3,7 @@
 // angular.module is a global place for creating, registering and retrieving Angular modules
 // 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
 // the 2nd parameter is an array of 'requires'
-angular.module('starter', ['ionic'])
+angular.module('starter', ['ionic', 'starter.controllers', 'angular-oauth2'])
 
 .run(function($ionicPlatform) {
   $ionicPlatform.ready(function() {
@@ -21,4 +21,56 @@ angular.module('starter', ['ionic'])
       StatusBar.styleDefault();
     }
   });
+})
+
+.config(function($stateProvider, $urlRouterProvider, OAuthProvider, OAuthTokenProvider){
+
+   OAuthProvider.configure({
+       baseUrl: 'http://localhost:8888',
+       clientId: 'testclient',
+       clientSecret: 'testpass', // optional,
+       grantPath: '/oauth',
+       revokePath: '/oauth'
+   });
+   OAuthTokenProvider.configure({
+       name: 'token',
+       options: {
+           secure: false
+       }
+   });
+
+  //Cada Navegação é considerada um State
+  //toda vez que chamar algo relacionado a tabs vai chamar o templates tabs.html
+  $stateProvider
+      .state('tabs', {
+        url: '/t',
+        abstract: true,//chamada abstrada - pai
+        templateUrl: 'templates/tabs.html'
+      })
+      //Filhos
+      .state('tabs.orders',{
+        url: '/orders',
+        views: {
+          'orders-tab':{
+            templateUrl: 'templates/orders.html',
+            controller: 'OrdersCtrl'
+          }
+        }
+      })
+      .state('tabs.create',{
+          url: '/create',
+          views: {
+              'create-tab':{
+                  templateUrl: 'templates/create.html'
+              }
+          }
+      })
+
+      //Não é filha
+      .state('login',{
+          url: '/login',
+          templateUrl: 'templates/login.html',
+          controller: 'LoginCtrl' //definindo o controller que será usado
+      })
+    $urlRouterProvider.otherwise('/login')//paginas inexistentes encaminha para /t/home
 })
